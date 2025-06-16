@@ -51,7 +51,7 @@ class PDOSession extends Session
         array $options,
         string $ipAddress,
         string $widgetId,
-        string $challengeId = null
+        ?string $challengeId = null
     )
     {
         parent::__construct($options, $ipAddress, $widgetId, $challengeId);

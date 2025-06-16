@@ -23,7 +23,7 @@ body:
     attributes:
       label: IconCaptcha version
       description: Please specify the version of the package that you are using.
-      placeholder: "e.g. 4.0.5"
+      placeholder: "e.g. 4.0.6"
     validations:
       required: true
   - type: input
