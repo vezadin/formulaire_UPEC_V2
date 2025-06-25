@@ -1,36 +1,27 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
-// Include the captcha classes.
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use IconCaptcha\IconCaptcha;
 
 try {
-
-    // Start a session.
-    // * Only required when using any 'session' driver in the configuration. See the documentation for more information.
     session_start();
 
-    // Load the IconCaptcha options.
-    $options = require 'captcha-config.php';
-
-    // Create an instance of IconCaptcha.
+    $options = require __DIR__ . '/captcha-config.php';
     $captcha = new IconCaptcha($options);
 
-    // Handle the CORS preflight request.
-    // * If you have disabled CORS in the configuration, you may remove this line.
-    $captcha->handleCors();
+    if ($captcha->handleCors()) {
+        exit; // Requête OPTIONS CORS, on arrête ici
+    }
 
-    // Process the request.
-    $captcha->request()->process();
+    $captcha->request()->process(); // Traite la requête du widget JS
 
-    // Request was not supported/recognized.
-    http_response_code(400);
-
+    http_response_code(200);
+    echo "Captcha request endpoint accessible.";
 } catch (Throwable $exception) {
-
     http_response_code(500);
-
-    // Add your custom error logging handling here.
-
+    echo "Erreur serveur : " . $exception->getMessage();
 }

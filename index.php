@@ -1,84 +1,201 @@
-<!DOCTYPE HTML>
-<html lang="en">
-    <head>
-        <title>IconCaptcha v4.0.6 - By Fabian Wennink</title>
-        <meta charset="UTF-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=11" />
-        <meta name="author" content="Fabian Wennink © <?= date('Y') ?>" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		<link href="examples/assets/favicon.ico" rel="shortcut icon" type="image/x-icon" />
-        <link href="examples/assets/demo.css" rel="stylesheet" type="text/css">
-    </head>
-    <body>
-        <div class="container">
-            <div class="logo-text">
-                <a href="https://github.com/fabianwennink/IconCaptcha-PHP/" target="_blank" rel="noopener">
-                    Ic<span>o</span>nCaptcha
-                </a>
-            </div>
+<?php
+require_once __DIR__ . '/vendor/autoload.php';
+session_start();
+$_SESSION['test'] = 'ok';
+echo 'Session test : ' . $_SESSION['test'];
 
-            <div class="shields">
-                <div class="shields-row">
-                    <a href="https://github.com/fabianwennink/IconCaptcha-PHP/releases" target="_blank" rel="noopener">
-                        <img src="https://img.shields.io/badge/version-4.0.6-orange.svg?style=flat-square" alt="Version 4.0.6" />
-                    </a>
-                    <a href="https://github.com/fabianwennink/IconCaptcha-PHP/blob/master/LICENSE" target="_blank" rel="noopener">
-                        <img src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" alt="MIT license" />
-                    </a>
-                    <a href="https://github.com/fabianwennink/IconCaptcha-PHP/issues" target="_blank" rel="noopener">
-                        <img src="https://img.shields.io/github/issues/fabianwennink/IconCaptcha-PHP?style=flat-square" alt="GitHub issues" />
-                    </a>
-                    <a href="https://github.com/fabianwennink/IconCaptcha-PHP" target="_blank" rel="noopener">
-                        <img src="https://img.shields.io/github/stars/fabianwennink/IconCaptcha-PHP?color=%23ffff&logo=github&style=flat-square" alt="GitHub stars" />
-                    </a>
-                </div>
-                <div class="shields-row">
-                    <a href="https://sonarcloud.io/dashboard?id=fabianwennink_IconCaptcha-PHP" target="_blank" rel="nofollow noreferrer noopener">
-                        <img src="https://img.shields.io/sonar/alert_status/fabianwennink_IconCaptcha-PHP?server=https%3A%2F%2Fsonarcloud.io&style=flat-square&logo=sonarcloud" alt="SonarCloud Status Badge" />
-                        <img src="https://img.shields.io/sonar/security_rating/fabianwennink_IconCaptcha-PHP?server=https%3A%2F%2Fsonarcloud.io&style=flat-square&logo=sonarcloud&color=%234c1" alt="SonarCloud Security Rating Badge" />
-                        <img src="https://img.shields.io/sonar/bugs/fabianwennink_IconCaptcha-PHP?server=https%3A%2F%2Fsonarcloud.io&style=flat-square&logo=sonarcloud" alt="SonarCloud Bugs Badge" />
-                        <img src="https://img.shields.io/sonar/vulnerabilities/fabianwennink_IconCaptcha-PHP?server=https%3A%2F%2Fsonarcloud.io&style=flat-square&logo=sonarcloud" alt="SonarCloud Vulnerabilities Badge" />
-                    </a>
-                </div>
-            </div>
+// Initialisation
+$name = $prenom = $email = $demande = $situationfamilial = $numeroTel = $nationalite = "";
+$nameErr = $prenomErr = $emailErr = $demandeErr = $situationfamilialErr = $numeroTelErr = $nationaliteErr = "";
+$captchaMessage = "";
+$captchaValid = false;
+$successMsg = "";
+$encodedData = [];
 
-            <div class="section">
-                <h2>EXAMPLES:</h2>
-                <a href="examples/forms/regular-form.php"><div class="btn">Regular Form <small>With JavaScript</small></div></a>
-                <a href="examples/forms/ajax-form.php"><div class="btn">AJAX Form <small>With jQuery</small></div></a>
-            </div>
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Validation des champs
+    if (empty($_POST["name"])) $nameErr = "Le champ est obligatoire.";
+    else $name = htmlspecialchars(trim($_POST["name"]));
 
-            <div class="section">
-                <h2>LINKS:</h2>
-                <a href="https://github.com/fabianwennink/IconCaptcha-PHP/" target="_blank" rel="noopener"><div class="btn">GitHub repository <small>Star the project on GitHub</small></small></div></a>
-                <a href="https://buymeacoffee.com/fabianwennink" target="_blank" rel="nofollow noopener"><div class="btn">Support the project <small>Buy me a coffee</small></div></a>
-                <a href="https://fabianwennink.nl/en/" target="_blank" rel="noopener"><div class="btn">Fabian Wennink <small>Developer Website</small></div></a>
-            </div>
+    if (empty($_POST["prenom"])) $prenomErr = "Le champ est obligatoire.";
+    else $prenom = htmlspecialchars(trim($_POST["prenom"]));
 
-            <div class="copyright">
-                <p>Copyright &copy; <?= date('Y'); ?> Fabian Wennink - All rights reserved</p>
-                <p>
-                    <small>
-                        IconCaptcha is licensed under <a href="https://www.fabianwennink.nl/projects/IconCaptcha/license" class="link-underline" target="_blank" rel="noopener">MIT</a>.
-                        Icons made by <a href="https://blendicons.com" class="link-underline" target="_blank" rel="nofollow noopener">BlendIcons</a>.
-                    </small>
-                </p>
-                <p><small>Running PHP <?= phpversion(); ?></small></p>
-            </div>
+    if (empty($_POST["email"])) $emailErr = "Le champ est obligatoire.";
+    elseif (!filter_var($_POST["email"], FILTER_VALIDATE_EMAIL)) $emailErr = "Email invalide.";
+    else $email = htmlspecialchars(trim($_POST["email"]));
+
+    if (empty($_POST["demande"])) $demandeErr = "Le champ est obligatoire.";
+    else $demande = htmlspecialchars(trim($_POST["demande"]));
+
+    if (empty($_POST["numeroTel"])) $numeroTelErr = "Le champ est obligatoire.";
+    elseif (!preg_match("/^[0-9]{10}$/", $_POST["numeroTel"])) $numeroTelErr = "10 chiffres requis.";
+    else $numeroTel = htmlspecialchars(trim($_POST["numeroTel"]));
+
+    if (empty($_POST["situationfamilial"])) $situationfamilialErr = "Le champ est obligatoire.";
+    else $situationfamilial = htmlspecialchars(trim($_POST["situationfamilial"]));
+
+    if (empty($_POST["nationalite"])) $nationaliteErr = "Le champ est obligatoire.";
+    else $nationalite = htmlspecialchars(trim($_POST["nationalite"]));
+
+    // Captcha
+    $options = require __DIR__ . '/examples/captcha-config.php';
+    $captcha = new \IconCaptcha\IconCaptcha($options);
+    $validation = $captcha->validate($_POST);
+
+    $captchaValid = $validation->success();
+    $captchaMessage = $captchaValid ? "Captcha validé." : "Validation captcha :";
+
+    // Si tout est OK
+    if (
+        empty($nameErr) && empty($prenomErr) && empty($emailErr) &&
+        empty($demandeErr) && empty($numeroTelErr) && empty($situationfamilialErr) &&
+        empty($nationaliteErr) && $captchaValid
+    ) {
+        $successMsg = "Merci pour votre message, $name !";
+
+        // Encodage base64 (optionnel)
+        $encodedData = [
+            'Nom' => base64_encode($name),
+            'Prénom' => base64_encode($prenom),
+            'Email' => base64_encode($email),
+            'Téléphone' => base64_encode($numeroTel),
+            'Situation familiale' => base64_encode($situationfamilial),
+            'Nationalité' => base64_encode($nationalite),
+            'Demande' => base64_encode($demande),
+        ];
+
+        // Enregistrement dans la base SQLite
+        try {
+            $db = new PDO('sqlite:' . __DIR__ . '/formulaire.db');
+            $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+            $stmt = $db->prepare("INSERT INTO users (name, prenom, email, numeroTel, situationfamilial, nationalite, demande, date_envoi)
+                                  VALUES (:name, :prenom, :email, :numeroTel, :situationfamilial, :nationalite, :demande, :date_envoi)");
+
+            $stmt->bindParam(':name', $name);
+            $stmt->bindParam(':prenom', $prenom);
+            $stmt->bindParam(':email', $email);
+            $stmt->bindParam(':numeroTel', $numeroTel);
+            $stmt->bindParam(':situationfamilial', $situationfamilial);
+            $stmt->bindParam(':nationalite', $nationalite);
+            $stmt->bindParam(':demande', $demande);
+            $stmt->bindParam(':date_envoi', $date_envoi);
+
+            $date_envoi = date('Y-m-d H:i:s');
+            $stmt->execute();
+        } catch (PDOException $e) {
+            echo "<p style='color:red;'>Erreur lors de l'enregistrement : " . $e->getMessage() . "</p>";
+        }
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <title>Formulaire de renseignement</title>
+    <link rel="stylesheet" href="styleF.css" />
+    <link rel="stylesheet" href="assets/client/css/iconcaptcha.min.css" />
+</head>
+<body>
+    <div class="titre">
+        <h2>
+            <?php
+            if ($successMsg) {
+                echo "Merci pour votre message,M.$name !<br>";
+                echo '<a href="stockage.php" target="_blank" style="font-weight:bold; font-size:1.1em;">Voir les formulaires envoyés (accès protégé)</a>';
+            } else {
+                echo "Formulaire de renseignement";
+            }
+            ?>
+        </h2>
+    </div>
+
+    <?php if (!$successMsg): ?>
+    <form method="post" action="<?= htmlspecialchars($_SERVER["PHP_SELF"]) ?>">
+        <div class="empl">
+            <label class="champs">Nom :
+                <input type="text" name="name" value="<?= htmlspecialchars($name) ?>" required />
+                <span class="error"><?= $nameErr ?></span>
+            </label>
+            <label class="champs">Prénom :
+                <input type="text" name="prenom" value="<?= htmlspecialchars($prenom) ?>" required />
+                <span class="error"><?= $prenomErr ?></span>
+            </label>
+            <label class="champs">Email :
+                <input type="email" name="email" value="<?= htmlspecialchars($email) ?>" required />
+                <span class="error"><?= $emailErr ?></span>
+            </label>
+            <label class="champs">Téléphone :
+                <input type="tel" name="numeroTel" value="<?= htmlspecialchars($numeroTel) ?>" pattern="[0-9]{10}" maxlength="10" />
+                <span class="error"><?= $numeroTelErr ?></span>
+            </label>
+            <label class="champs">Situation familiale :
+                <input type="text" name="situationfamilial" value="<?= htmlspecialchars($situationfamilial) ?>" required />
+                <span class="error"><?= $situationfamilialErr ?></span>
+            </label>
+            <label class="champs">Nationalité :
+                <input type="text" name="nationalite" value="<?= htmlspecialchars($nationalite) ?>" required />
+                <span class="error"><?= $nationaliteErr ?></span>
+            </label>
+
         </div>
 
-        <a href="https://github.com/fabianwennink/IconCaptcha-PHP/" target="_blank" rel="noopener">
-            <div class="corner-ribbon top-left">
-                STAR ME ON GITHUB
-            </div>
-        </a>
+        <div class="dmd">
+            <label class="champs">Demande :
+                <textarea name="demande" required><?= htmlspecialchars($demande) ?></textarea>
+                <span class="error"><?= $demandeErr ?></span>
+            </label>
+        </div>
 
-        <!-- buy me a coffee -->
-        <script data-name="BMC-Widget" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="fabianwennink"
-                data-description="Support me on Buy me a coffee!" data-message="If you enjoy IconCaptcha, please consider supporting me with a coffee!"
-                data-color="#ffffff" data-position="right" data-x_margin="25" data-y_margin="25"></script>
-        <!-- /buy me a coffee -->
+        <div style="margin-top: 20px;">
+            <?php if ($captchaMessage): ?>
+                <p style="color: <?= $captchaValid ? 'green' : 'red' ?>"><?= htmlspecialchars($captchaMessage) ?></p>
+            <?php endif; ?>
+            <?= \IconCaptcha\Token\IconCaptchaToken::render() ?>
+            <div class="iconcaptcha-widget" data-theme="dark"></div>
+        </div>
 
-        <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700" rel="stylesheet">
-    </body>
+        <br />
+        <button type="submit">Envoyer</button>
+    </form>
+    <?php endif; ?>
+
+<script src="assets/client/js/iconcaptcha.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    IconCaptcha.init('.iconcaptcha-widget', {
+        general: {
+            endpoint: 'examples/captcha-request.php',
+            fontFamily: 'inherit',
+        },
+        security: {
+            interactionDelay: 1000,
+            hoverProtection: true,
+            displayInitialMessage: true,
+            initializationDelay: 500,
+            incorrectSelectionResetDelay: 3000,
+            loadingAnimationDuration: 1000,
+        },
+        locale: {
+            initialization: {
+                verify: 'Confirmez que vous êtes humain.',
+                loading: 'Chargement du captcha...',
+            },
+            header: 'Sélectionnez l’image affichée le <u>moins</u> de fois',
+            correct: 'Vérification réussie.',
+            incorrect: {
+                title: 'Oups.',
+                subtitle: "Vous avez sélectionné la mauvaise image."
+            },
+            timeout: {
+                title: 'Veuillez patienter.',
+                subtitle: 'Trop d’erreurs consécutives.'
+            }
+        }
+    });
+});
+</script>
+</body>
 </html>
