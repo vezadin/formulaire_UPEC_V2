@@ -95,8 +95,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8" />
     <title>Formulaire de renseignement</title>
-    <link rel="stylesheet" href="styleF.css" />
+    <link rel="stylesheet" href="/styleF.css" />
     <link rel="stylesheet" href="assets/client/css/iconcaptcha.min.css" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
 </head>
 <body>
     <div class="titre">

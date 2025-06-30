@@ -1,16 +1,21 @@
-/* style-stockage.css : affichage tableau */
+/* styleS.css : styles pour la page stockage.php */
+
+/* Style global */
 body {
     font-family: Arial, sans-serif;
     margin: 40px;
     background-color: black;
+    color: white;
 }
 
+/* Titres */
 h2 {
     color: rgb(0, 128, 255);
     text-align: center;
     margin-bottom: 30px;
 }
 
+/* Message (confirmation, erreur) */
 .message {
     text-align: center;
     color: red;
@@ -18,26 +23,35 @@ h2 {
     margin: 10px auto;
 }
 
+/* Tableau */
 table {
     width: 90%;
     margin: 0 auto;
     border-collapse: collapse;
     font-size: 14px;
+    background-color: black;
 }
 
+/* En-têtes et cellules */
 th, td {
     border: 1px solid #444;
-    background-color: black;
-    color: white;
     padding: 8px;
     text-align: center;
 }
 
+/* En-têtes */
 th {
     background-color: rgb(0, 128, 255);
     color: white;
 }
 
+/* Cellules */
+td {
+    background-color: black;
+    color: white;
+}
+
+/* Boutons de suppression */
 button {
     background-color: #d9534f;
     border: none;
@@ -46,8 +60,17 @@ button {
     cursor: pointer;
     font-size: 0.9em;
     border-radius: 3px;
+    transition: background-color 0.3s ease;
 }
 
+/* Effet au survol du bouton */
 button:hover {
     background-color: #c9302c;
+}
+
+/* Erreur dans le formulaire PIN */
+.error {
+    color: red;
+    text-align: center;
+    margin-top: 10px;
 }
