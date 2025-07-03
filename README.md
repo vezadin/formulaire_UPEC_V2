@@ -33,15 +33,12 @@ Un projet PHP simple qui permet d’envoyer un formulaire protégé par un captc
 **Avec Docker**
 Lancer les conteneurs :
 
-    bash
     docker compose up --build
 
 Arrêter les conteneurs :
     
-    bash
     docker compose down
 
 **Avec PHP**:
     
-    bash
     php -S localhost:8000
