@@ -112,9 +112,12 @@ exit;
 <body>
 <h2 style="text-align: center;">Liste des formulaires envoyés</h2>
 
-<?php if (!empty($message)): ?>
-    <p class="message"><?= htmlspecialchars($message) ?></p>
-<?php endif; ?>
+<?php
+if (!empty($_SESSION['message'])) {
+    echo '<p class="message" id="flash-message">' . htmlspecialchars($_SESSION['message']) . '</p>';
+    unset($_SESSION['message']); // Supprime le message après affichage
+}
+?>
 <?php
 if (!empty($_SESSION['message'])) {
     echo '<p class="message">' . htmlspecialchars($_SESSION['message']) . '</p>';
@@ -155,5 +158,14 @@ if (!empty($_SESSION['message'])) {
         </tr>
     <?php endforeach; ?>
 </table>
+<script>
+    setTimeout(function () {
+        const msg = document.getElementById('flash-message');
+        if (msg) {
+            msg.style.display = 'none';
+        }
+    }, 2500); 
+</script>
+
 </body>
 </html>
