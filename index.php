@@ -1,19 +1,31 @@
 <?php
+// Chargement automatique des dépendances (captcha, etc.)
 require_once __DIR__ . '/vendor/autoload.php';
-session_start();
-$_SESSION['test'] = 'ok';
-echo 'Session test : ' . $_SESSION['test'];
 
-// Initialisation
+// Démarrage de la session
+session_start();
+$_SESSION['test'] = 'ok'; // Juste un test
+echo 'Session test : ' . $_SESSION['test']; // Affiche pour vérification
+
+// Initialisation des variables du formulaire
 $name = $prenom = $email = $demande = $situationfamilial = $numeroTel = $nationalite = "";
+
+// Initialisation des messages d'erreurs
 $nameErr = $prenomErr = $emailErr = $demandeErr = $situationfamilialErr = $numeroTelErr = $nationaliteErr = "";
+
+// Variables liées au captcha
 $captchaMessage = "";
 $captchaValid = false;
+
+// Message de confirmation
 $successMsg = "";
+
+// Tableau pour encoder les données en base64
 $encodedData = [];
 
+// Vérifie si le formulaire a été soumis
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Validation des champs
+    // === Validation des champs du formulaire ===
     if (empty($_POST["name"])) $nameErr = "Le champ est obligatoire.";
     else $name = htmlspecialchars(trim($_POST["name"]));
 
@@ -37,7 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($_POST["nationalite"])) $nationaliteErr = "Le champ est obligatoire.";
     else $nationalite = htmlspecialchars(trim($_POST["nationalite"]));
 
-    // Captcha
+    // === Vérification du Captcha ===
     $options = require __DIR__ . '/examples/captcha-config.php';
     $captcha = new \IconCaptcha\IconCaptcha($options);
     $validation = $captcha->validate($_POST);
@@ -45,7 +57,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $captchaValid = $validation->success();
     $captchaMessage = $captchaValid ? "Captcha validé." : "Validation captcha :";
 
-    // Si tout est OK
+    // === Si tout est bien rempli et captcha OK ===
     if (
         empty($nameErr) && empty($prenomErr) && empty($emailErr) &&
         empty($demandeErr) && empty($numeroTelErr) && empty($situationfamilialErr) &&
@@ -53,7 +65,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     ) {
         $successMsg = "Merci pour votre message, $name !";
 
-        // Encodage base64 (optionnel)
+        // Encodage en base64
         $encodedData = [
             'Nom' => base64_encode($name),
             'Prénom' => base64_encode($prenom),
@@ -64,7 +76,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             'Demande' => base64_encode($demande),
         ];
 
-        // Enregistrement dans la base SQLite
+        // Enregistrement dans SQLite
         try {
             $db = new PDO('sqlite:' . __DIR__ . '/formulaire.db');
             $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -90,6 +102,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 ?>
 
+<!-- === HTML du formulaire === -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -103,6 +116,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="titre">
         <h2>
             <?php
+            // Affiche un message de remerciement si le formulaire est réussi
             if ($successMsg) {
                 echo "Merci pour votre message,M.$name !<br>";
                 echo '<a href="stockage.php" target="_blank" style="font-weight:bold; font-size:1.1em;">Voir les formulaires envoyés (accès protégé)</a>';
@@ -113,6 +127,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </h2>
     </div>
 
+    <!-- Affiche le formulaire si pas encore envoyé ou s'il y a une erreur -->
     <?php if (!$successMsg): ?>
     <form method="post" action="<?= htmlspecialchars($_SERVER["PHP_SELF"]) ?>">
         <div class="empl">
@@ -140,7 +155,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <input type="text" name="nationalite" value="<?= htmlspecialchars($nationalite) ?>" required />
                 <span class="error"><?= $nationaliteErr ?></span>
             </label>
-
         </div>
 
         <div class="dmd">
@@ -150,25 +164,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </label>
         </div>
 
+        <!-- Affichage des messages du captcha -->
         <div style="margin-top: 20px;">
             <?php if ($captchaMessage): ?>
                 <p style="color: <?= $captchaValid ? 'green' : 'red' ?>"><?= htmlspecialchars($captchaMessage) ?></p>
             <?php endif; ?>
+
+            <!-- Affichage du token + widget captcha -->
             <?= \IconCaptcha\Token\IconCaptchaToken::render() ?>
             <div class="iconcaptcha-widget" data-theme="dark"></div>
         </div>
 
+        <!-- Bouton d'envoi -->
         <br />
         <button type="submit">Envoyer</button>
     </form>
     <?php endif; ?>
 
+<!-- === JS du captcha === -->
 <script src="assets/client/js/iconcaptcha.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     IconCaptcha.init('.iconcaptcha-widget', {
         general: {
-            endpoint: 'examples/captcha-request.php',
+            endpoint: 'examples/captcha-request.php', // URL de validation côté serveur
             fontFamily: 'inherit',
         },
         security: {
@@ -200,3 +219,4 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 </body>
 </html>
+
