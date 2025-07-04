@@ -22,7 +22,7 @@ Un projet PHP simple qui permet d’envoyer un formulaire protégé par un captc
 - Affichage dynamique des messages de validation
 - Déploiement local simple avec Docker
 
-## 📦 Installation (sans Docker)
+## 📦 Installation
 
 1. **Cloner le projet** :
    ```bash
